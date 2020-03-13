@@ -1,7 +1,8 @@
 <html>
 <head>
 	<title>Remote player</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
 </head>	
 <body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
@@ -11,18 +12,18 @@ body {
 	background-color: #111;
 	font: normal normal 18px/1.4 PT Sans,Arial,Tahoma,Verdana,sans-serif;
 	color: #fff;
-}
-#viewer_container {
-	text-align: center;
-}
-#pilot_container {
-	text-align: center;
+    text-align: center;
 }
 #device_name {
 	width: 310px!important;
 }
-.shop_btn {
+.form-control {
+    display: inline-block;
+    width: auto;
+}
+.my_btn {
 	color: #2196F3;
+    background-color: transparent;
     border: 2px solid #2196F3;
     min-width: 150px;
 	padding: 0 10px;
@@ -37,37 +38,10 @@ body {
 	box-sizing: border-box;
 	font-size: 14px;
 }
-.shop_btn:hover {
+.my_btn:hover {
 	color: #fff;
 	border: 2px solid #2196F3;
 	background-color: #2196F3;
-}
-.hide {
-	display: none!important;
-}
-.text {
-	background-color: #fff;
-	border: 1px solid #ccc;
-	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
-	-moz-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
-	box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
-	-webkit-transition: border linear .2s,box-shadow linear .2s;
-	-moz-transition: border linear .2s,box-shadow linear .2s;
-	-o-transition: border linear .2s,box-shadow linear .2s;
-	transition: border linear .2s,box-shadow linear .2s;
-	font-size: 16px;
-	height: auto;
-	padding: 7px 9px;
-	border-radius: 4px;
-	line-height: 20px;
-	color: #555;
-}
-.text:focus {
-	border-color:rgba(82,168,236,0.8);
-	outline:0;outline:thin dotted \9;
-	-webkit-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);
-	-moz-box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6);
-	box-shadow:inset 0 1px 1px rgba(0,0,0,0.075),0 0 8px rgba(82,168,236,0.6)
 }
 .slider {
 	-webkit-appearance: none;
@@ -96,9 +70,6 @@ body {
 	background: #4CAF50;
 	cursor: pointer;
 }
-.cont {
-	margin-top: 20px;
-}
 h4 {
 	margin-bottom: 5px;
 }
@@ -106,17 +77,24 @@ h4 {
 <script>
 function setCookie(cname,cvalue,exdays) {var d=new Date();d.setTime(d.getTime()+(exdays*24*60*60*1000));var expires="expires="+d.toUTCString();document.cookie=cname+"="+cvalue+";"+expires+";path=/";}
 function getCookie(cname) {var name=cname+"=";var decodedCookie=decodeURIComponent(document.cookie);var ca=decodedCookie.split(';');for(var i=0;i<ca.length;i++) {var c=ca[i];while (c.charAt(0)==' ') {c=c.substring(1);}if (c.indexOf(name)==0) {return c.substring(name.length,c.length);}}return "";}
+
+var wsUrl = "<?=$_SERVER ["SERVER_ADDR"]?>:3000";
+
 $(document).ready(function() {
 	$("#device_name").val(getCookie("name"));
-	$(".select .shop_btn").click(function() {
-		$(".select").addClass("hide");
-	});
 	$("#viewer").click(function() {
+        if ($("#device_name").val().length <= 0) {
+            return false;
+        }
+		$(".select").addClass("d-none");
 		setCookie("name",$("#device_name").val(),30);
-		$("#viewer_container").removeClass("hide");
-		socket = io("<?=$_SERVER ["SERVER_ADDR"]?>:3000",{'query': "type=1&name="+$("#device_name").val(), 'reconnection': false});
-		socket.on('yt_url',function(data) {
-			$("#yt_url").attr("src",data.iframe);
+		$("#viewer_container").removeClass("d-none");
+		socket = io(wsUrl, {
+            query: "type=1&name="+$("#device_name").val(),
+            reconnection: false
+        });
+		socket.on('play-data',function(data) {
+			$("#yt-frame").attr("src",data.iframe);
 			$("#audio").attr("src",data.audio);
 		});
 		socket.on('pair_key',function(data) {
@@ -138,24 +116,31 @@ $(document).ready(function() {
 		});
 	});
 	$("#pilot").click(function() {
+        if ($("#device_name").val().length <= 0) {
+            return false;
+        }
+		$(".select").addClass("d-none");
 		setCookie("name",$("#device_name").val(),30);
-		$("#pilot_container").removeClass("hide");
+		$("#pilot_container").removeClass("d-none");
 		$("#pair_code").focus();
-		socket = io("<?=$_SERVER ["SERVER_ADDR"]?>:3000",{'query': "type=2&name="+$("#device_name").val(), 'reconnection': false});
-		$("#connect").click(function() {
+		socket = io(wsUrl, {
+            query: "type=1&name="+$("#device_name").val(),
+            reconnection: false
+        });
+		$("#pair_code_form").submit(function() {
 			if ($("#pair_code").val()) {
 				socket.emit('pair_attempt',$("#pair_code").val());
 				$("#connection_status").html("Pairing...");
 			} else {
 				alert ("Enter pair code");
-			}
+            }
+            return false;
 		});
 		socket.on('pair_result',function(data) {
 			if (data.result==1) {
 				$("#connection_status").html("Success. Paired with "+data.name);
-				$("#pair_code").addClass("hide");
-				$("#connect").addClass("hide");
-				$("#url_form").removeClass("hide");
+				$("#pair_code_form").addClass("d-none");
+				$("#url_form").removeClass("d-none");
 			} else {
 				$("#connection_status").html("Conection canceled");
 			}
@@ -171,47 +156,66 @@ $(document).ready(function() {
 		socket.emit('url',{"url":$("#stations select").val(),"rmfon":1});
 	});
 	$("#rmf_on").click(function() {
-		$(this).addClass("hide");
-		$("#stations").removeClass("hide");
-		$.ajax({type: "POST",url: "rmfon.php", contentType: "application/json", success: function(result){
-			for (i=0;i<result.length;i++) {
-				$("#stations select").append("<option value=\""+result[i].id+"\">"+result[i].name+"</option>");
-			}
-		},error: function() {
-		}});
+        $(this).addClass("d-none");
+        $.ajax({
+            type: "POST",
+            url: "rmfon.php",
+            contentType: "application/json",
+            success: function(result) {
+                $("#stations").removeClass("d-none");
+                $("#volume-container").removeClass("d-none");
+                for (i=0;i<result.length;i++) {
+                    $("#stations select").append("<option value=\""+result[i].id+"\">"+result[i].name+"</option>");
+                }
+            },
+            error: function() {
+                $("#rmf_on").removeClass("d-none");
+                alert("Can't connect with server");
+            }
+        });
 	});
 	$("#volume").change(function() {
 		socket.emit('change_volume',this.value);
 	});
 });
 </script>
-<div id="viewer_container" class="hide">
+<div id="viewer_container" class="d-none">
 	<div id="status" style="font-size: 68px;text-align:center;">Pair code: <span></span></div>
 	<div id="pair_info" style="text-align: center;"></div>
-	<iframe id="yt_url" src="about:blank" style="width:80%;height:75%;border:0" allow="autoplay"></iframe>
+	<iframe id="yt-frame" src="about:blank" style="width:80%;height:75%;border:0" allow="autoplay"></iframe>
 	<audio style="display:none" autoplay="true" id="audio"></audio>
 </div>
-<div id="pilot_container" class="hide">
-	<div><input type="number" placeholder="Type pair code" id="pair_code" class="text"></div>
-	<div class="shop_btn" id="connect">Connect</div>
+<div id="pilot_container" class="d-none">
+    <form id="pair_code_form">
+        <div><input type="number" placeholder="Type pair code" id="pair_code" class="form-control mt-3"></div>
+        <input type="submit" class="my_btn" value="Connect">
+    </form>
 	<div id="connection_status"></div>
-	<div id="url_form" class="hide">
-		<div><input type="text" id="url" class="text" placeholder="Youtube link"><div class="shop_btn" id="btn">Play</div></div>
-		<div class="cont">
-			<div class="shop_btn" id="rmf_on">Otwórz listę stacji w rmf on</div>
-			<span id="stations" class="hide"><select></select><div class="shop_btn" id="rmf_on_play">Włącz radio</div></span>
-		</div>
-		<div>
-			<h4>Volume:</h4>
+	<div id="url_form" class="d-none">
+		<div class="form-group">
+            <input type="text" id="url" class="form-control" placeholder="Youtube link">
+            <div class="my_btn" id="btn">Play</div>
+        </div>
+        <div class="form-group">
+            <div class="my_btn" id="rmf_on">Otwórz listę stacji w rmf on</div>
+            <span id="stations" class="d-none">
+                <select class="form-control"></select>
+                <div class="my_btn" id="rmf_on_play">Włącz radio</div>
+            </span>
+        </div>
+		<div class="form-group d-none" id="volume-container">
+			<h4 class="mb-2">Radio volume:</h4>
 			<input type="range" min="1" max="100" value="100" class="slider" id="volume">
 		</div>
 	</div>
 </div>
 <div class="select">
-	<div style="text-align: center"><input type="text" placeholder="Type device name" id="device_name" class="text"></div>
-	<div style="text-align: center">
-		<div class="shop_btn" id="viewer">Viewer</div>
-		<div class="shop_btn" id="pilot">Pilot</div>
+	<div>
+        <input type="text" placeholder="Type device name" id="device_name" class="form-control mt-3">
+    </div>
+	<div>
+		<div class="my_btn" id="viewer">Viewer</div>
+		<div class="my_btn" id="pilot">Pilot</div>
 	</div>
 </div>
 </body></html>

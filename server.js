@@ -55,7 +55,7 @@ io.sockets.on('connection', function(socket) {
         if (data.rmfon == 1) {
             exec('php ' + __dirname + '/get_stream.php -i ' + data.url, (err, data) => {
                 if (err) throw err;
-                io.to(users[userArrayId].paired_device).emit('yt_url', {
+                io.to(users[userArrayId].paired_device).emit('play-data', {
                     iframe: 'about:blank',
                     audio: data
                 });
@@ -71,7 +71,7 @@ io.sockets.on('connection', function(socket) {
                 url = url[0];
             }
             url = 'https://www.youtube.com/embed/' + url + '?autoplay=1';
-            io.to(users[userArrayId].paired_device).emit('yt_url', {
+            io.to(users[userArrayId].paired_device).emit('play-data', {
                 iframe: url,
                 audio: ''
             });
