@@ -18,27 +18,27 @@ io.sockets.on('connection', function(socket) {
 	if (this_params.type == 1) {
 		let pair_key = random_code(4);
 		users.push({
-            'socket_id': socket.id,
-            'name': this_params.name,
-            'pair_key': pair_key,
-            'type': 1,
-            'paired_device': null
+            socket_id: socket.id,
+            name: this_params.name,
+            pair_key: pair_key,
+            type: 1,
+            paired_device: null,
+            pairAttempt: []
         });
 		io.to(socket.id).emit('pair_key', pair_key);
 	} else {
 		users.push({
-            'socket_id': socket.id,
-            'name': this_params.name,
-            'pair_key': '',
-            'type': 2,
-            'paired_device': null
+            socket_id: socket.id,
+            name: this_params.name,
+            type: 2,
+            paired_device: null
         });
 	}
 	console.log('Connected');
 	socket.on('disconnect', function() {
         let userArrayId = array_column(users, 'socket_id').indexOf(socket.id);
 
-		io.to(users[userArrayId].paired_device).emit('dev_disc', 1);
+		io.to(users[userArrayId].paired_device).emit('connection_status', 'Disconnected');
         users.splice(userArrayId, 1);
         
 		console.log('Disconnected');
@@ -88,23 +88,32 @@ io.sockets.on('connection', function(socket) {
             return false;
         }
         var userArrayId = array_column(users, 'socket_id').indexOf(socket.id);
-		if (array_column(users, 'pair_key').indexOf(data) > -1) {
-			io.to(users[array_column(users, 'pair_key').indexOf(data)].socket_id).emit('pair_attempt', {
+        var pairArrayId = array_column(users, 'pair_key').indexOf(data);
+		if (pairArrayId > -1) {
+            users[pairArrayId].pairAttempt.push(socket.id);
+			io.to(users[pairArrayId].socket_id).emit('pair_attempt', {
                 name: users[userArrayId].name,
                 id: socket.id
             });
 		}
 	});
 	socket.on('pair_result', function(data) {
+        var userArrayId = array_column(users, 'socket_id').indexOf(socket.id);
 		if (data.result == 1) {
+            if (users[userArrayId].pairAttempt.indexOf(data.id) < 0) {
+                return false;
+            }
+            users[userArrayId].pairAttempt.splice(users[userArrayId].pairAttempt.indexOf(data.id), 1);
 			users[array_column(users, 'socket_id').indexOf(socket.id)].paired_device = data.id;
 			users[array_column(users, 'socket_id').indexOf(data.id)].paired_device = socket.id;
 			io.to(data.id).emit('pair_result', {
                 'result': 1,
-                'name': users[array_column(users, 'socket_id').indexOf(socket.id)].name
+                'name': users[userArrayId].name
             });
+            io.to(data.id).emit('connection_status', 'Success. Paired with ' + users[userArrayId].name);
 		} else {
 			io.to(data.id).emit('pair_result', {'result': 0});
+            io.to(data.id).emit('connection_status', 'Conection canceled');
 		}
 	});
 });

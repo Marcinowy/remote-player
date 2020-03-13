@@ -78,7 +78,16 @@ h4 {
 function setCookie(cname,cvalue,exdays) {var d=new Date();d.setTime(d.getTime()+(exdays*24*60*60*1000));var expires="expires="+d.toUTCString();document.cookie=cname+"="+cvalue+";"+expires+";path=/";}
 function getCookie(cname) {var name=cname+"=";var decodedCookie=decodeURIComponent(document.cookie);var ca=decodedCookie.split(';');for(var i=0;i<ca.length;i++) {var c=ca[i];while (c.charAt(0)==' ') {c=c.substring(1);}if (c.indexOf(name)==0) {return c.substring(name.length,c.length);}}return "";}
 
-var wsUrl = "<?=$_SERVER ["SERVER_ADDR"]?>:3000";
+var wsConnect = type => {
+    var wsUrl = "<?=$_SERVER ["SERVER_ADDR"]?>:3000";
+    socket = io(wsUrl, {
+        query: "type=" + type + "&name=" + $("#device_name").val(),
+        reconnection: false
+    });
+    socket.on('connection_status',function(data) {
+        $("#connection_status").html(data);
+    });
+}
 
 $(document).ready(function() {
 	$("#device_name").val(getCookie("name"));
@@ -88,11 +97,8 @@ $(document).ready(function() {
         }
 		$(".select").addClass("d-none");
 		setCookie("name",$("#device_name").val(),30);
-		$("#viewer_container").removeClass("d-none");
-		socket = io(wsUrl, {
-            query: "type=1&name="+$("#device_name").val(),
-            reconnection: false
-        });
+        $("#viewer_container").removeClass("d-none");
+        wsConnect(1);
 		socket.on('play-data',function(data) {
 			$("#yt-frame").attr("src",data.iframe);
 			$("#audio").attr("src",data.audio);
@@ -103,16 +109,13 @@ $(document).ready(function() {
 		socket.on('pair_attempt',function(data) {
 			if (confirm('Do you want to connect with '+data.name+'?')) {
 				socket.emit('pair_result',{"result":1,"id":data.id});
-				$("#pair_info").html("Connected with "+data.name);
+				$("#connection_status").html("Connected with "+data.name);
 			} else  {
 				socket.emit('pair_result',{"result":0,"id":data.id});
 			}
 		});
-		socket.on('dev_disc',function(data) {
-			$("#pair_info").html("Disconnected");
-		});
 		socket.on('change_volume',function(data) {
-			$("#audio")[0].volume=data/100;
+			$("#audio")[0].volume = data/100;
 		});
 	});
 	$("#pilot").click(function() {
@@ -122,11 +125,8 @@ $(document).ready(function() {
 		$(".select").addClass("d-none");
 		setCookie("name",$("#device_name").val(),30);
 		$("#pilot_container").removeClass("d-none");
-		$("#pair_code").focus();
-		socket = io(wsUrl, {
-            query: "type=1&name="+$("#device_name").val(),
-            reconnection: false
-        });
+        $("#pair_code").focus();
+        wsConnect(2);
 		$("#pair_code_form").submit(function() {
 			if ($("#pair_code").val()) {
 				socket.emit('pair_attempt',$("#pair_code").val());
@@ -138,15 +138,9 @@ $(document).ready(function() {
 		});
 		socket.on('pair_result',function(data) {
 			if (data.result==1) {
-				$("#connection_status").html("Success. Paired with "+data.name);
 				$("#pair_code_form").addClass("d-none");
 				$("#url_form").removeClass("d-none");
-			} else {
-				$("#connection_status").html("Conection canceled");
 			}
-		});
-		socket.on('dev_disc',function(data) {
-			$("#connection_status").html("Disconnected");
 		});
 	});
 	$("#btn").click(function() {
@@ -179,9 +173,9 @@ $(document).ready(function() {
 	});
 });
 </script>
+<div id="connection_status"></div>
 <div id="viewer_container" class="d-none">
-	<div id="status" style="font-size: 68px;text-align:center;">Pair code: <span></span></div>
-	<div id="pair_info" style="text-align: center;"></div>
+	<div id="status" style="font-size:68px">Pair code: <span></span></div>
 	<iframe id="yt-frame" src="about:blank" style="width:80%;height:75%;border:0" allow="autoplay"></iframe>
 	<audio style="display:none" autoplay="true" id="audio"></audio>
 </div>
@@ -190,7 +184,6 @@ $(document).ready(function() {
         <div><input type="number" placeholder="Type pair code" id="pair_code" class="form-control mt-3"></div>
         <input type="submit" class="my_btn" value="Connect">
     </form>
-	<div id="connection_status"></div>
 	<div id="url_form" class="d-none">
 		<div class="form-group">
             <input type="text" id="url" class="form-control" placeholder="Youtube link">
