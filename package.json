@@ -1,0 +1,25 @@
+{
+  "name": "remote-player",
+  "version": "1.0.0",
+  "description": "App that allows you to control music on your PC or TV from any device connected to the internet",
+  "main": "server.js",
+  "dependencies": {
+    "request": "^2.88.0",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "server": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Marcinowy/remote-player.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Marcinowy/remote-player/issues"
+  },
+  "homepage": "https://github.com/Marcinowy/remote-player#readme"
+}
