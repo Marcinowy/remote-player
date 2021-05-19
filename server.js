@@ -18,10 +18,10 @@ console.log('Server running...');
 io.use(middleware.main);
 
 io.sockets.on('connection', (socket) => {
-	let handshake = socket.handshake.query;
-	if (handshake.type === 'viewer') {
-		let pairKey = randomCode(4);
-		users[socket.id] = {
+    let handshake = socket.handshake.query;
+    if (handshake.type === 'viewer') {
+        let pairKey = randomCode(4);
+        users[socket.id] = {
             socketId: socket.id,
             name: handshake.name,
             pairKey: pairKey,
@@ -29,30 +29,30 @@ io.sockets.on('connection', (socket) => {
             pairedDevice: null,
             pairAttempt: []
         };
-		io.to(socket.id).emit('pair-key', pairKey);
-	} else if (handshake.type === 'pilot') {
-		users[socket.id] = {
+        io.to(socket.id).emit('pair-key', pairKey);
+    } else if (handshake.type === 'pilot') {
+        users[socket.id] = {
             socketId: socket.id,
             name: handshake.name,
             type: 'pilot',
             pairedDevice: null
         };
-	} else {
+    } else {
         return false;
     }
-	console.log('Connected');
+    console.log('Connected');
 
-	socket.on('disconnect', () => {
+    socket.on('disconnect', () => {
         if (users[socket.id].pairedDevice) {
             io.to(users[socket.id].pairedDevice).emit('connection-status', 'Disconnected');
         }
 
         delete users[socket.id];
-		console.log('Disconnected');
-	});
+        console.log('Disconnected');
+    });
 
-	socket.on('url', async (data) => {
-		if (!users[socket.id].pairedDevice) {
+    socket.on('url', async (data) => {
+        if (!users[socket.id].pairedDevice) {
             return false;
         }
         if (users[socket.id].type !== 'pilot') {
@@ -72,49 +72,49 @@ io.sockets.on('connection', (socket) => {
                 audio: ''
             });
         }
-	});
+    });
 
-	socket.on('change-volume', (data) => {
-		if (users[socket.id].pairedDevice) {
-			io.to(users[socket.id].pairedDevice).emit('change-volume', data);
-		}
-	});
+    socket.on('change-volume', (data) => {
+        if (users[socket.id].pairedDevice) {
+            io.to(users[socket.id].pairedDevice).emit('change-volume', data);
+        }
+    });
 
-	socket.on('pair-attempt', (data) => {
+    socket.on('pair-attempt', (data) => {
         if (typeof data !== 'string' || data.trim().length <= 0) {
             return false;
         }
         let pairArrayId = arrayColumn(users, 'pairKey').indexOf(data);
-		if (pairArrayId > -1) {
+        if (pairArrayId > -1) {
             pairArrayId = Object.keys(users)[pairArrayId];
             users[pairArrayId].pairAttempt.push(socket.id);
-			io.to(users[pairArrayId].socketId).emit('pair-attempt', {
+            io.to(users[pairArrayId].socketId).emit('pair-attempt', {
                 name: users[socket.id].name,
                 id: socket.id
             });
-		}
-	});
+        }
+    });
 
-	socket.on('pair-result', (data) => {
+    socket.on('pair-result', (data) => {
         if (users[socket.id].pairAttempt.indexOf(data.id) < 0) return false;
         if (typeof users[data.id] === typeof undefined) return false;
 
         users[socket.id].pairAttempt.splice(users[socket.id].pairAttempt.indexOf(data.id), 1);
-		if (data.result) {
-			users[socket.id].pairedDevice = data.id;
-			users[data.id].pairedDevice = socket.id;
-			io.to(data.id).emit('pair-result', {
+        if (data.result) {
+            users[socket.id].pairedDevice = data.id;
+            users[data.id].pairedDevice = socket.id;
+            io.to(data.id).emit('pair-result', {
                 result: true,
                 name: users[socket.id].name
             });
             io.to(data.id).emit('connection-status', `Success. Paired with ${users[socket.id].name}`);
-		} else {
-			io.to(data.id).emit('pair-result', {
+        } else {
+            io.to(data.id).emit('pair-result', {
                 result: false
             });
             io.to(data.id).emit('connection-status', 'Conection canceled');
-		}
-	});
+        }
+    });
 });
 
 var getRmfonAudioUrl = async (stationId) => {

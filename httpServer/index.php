@@ -1,10 +1,10 @@
 <html>
 <head>
-	<title>Remote player</title>
+    <title>Remote player</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.4.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/app.css">
-</head>	
+</head>    
 <body>
     <div id="connection-status"></div>
     <div id="viewer-container" class="d-none">
