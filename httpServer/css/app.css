@@ -1,0 +1,70 @@
+body {
+    background-color: #111;
+    font: normal normal 18px/1.4 PT Sans,Arial,Tahoma,Verdana,sans-serif;
+    color: #fff;
+    text-align: center;
+}
+#device-name {
+    width: 310px!important;
+}
+#yt-frame {
+    width: 80%;
+    height: 75%;
+    border: 0;
+}
+.form-control {
+    display: inline-block;
+    width: auto;
+}
+.transparent-btn {
+    color: #2196F3;
+    background-color: transparent;
+    border: 2px solid #2196F3;
+    min-width: 150px;
+    padding: 0 10px;
+    border-radius: 6px;
+    display: inline-block;
+    margin: 2px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .2s ease-out;
+    height: 38px;
+    line-height: 34px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+.transparent-btn:hover {
+    color: #fff;
+    border: 2px solid #2196F3;
+    background-color: #2196F3;
+}
+.slider {
+    -webkit-appearance: none;
+    width: 25%;
+    height: 25px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    -webkit-transition: .2s;
+    transition: opacity .2s;
+}
+.slider:hover {
+    opacity: 1;
+}
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    cursor: pointer;
+}
+.slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    background: #4CAF50;
+    cursor: pointer;
+}
+h4 {
+    margin-bottom: 5px;
+}

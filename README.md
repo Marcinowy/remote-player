@@ -3,6 +3,6 @@ App that allows you to control music on your PC or TV from any device connected 
 
 ## Getting started
 ```bash
-npm install socket.io
-node server.js
+npm i
+npm run server
 ```

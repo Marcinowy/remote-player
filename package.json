@@ -4,8 +4,9 @@
   "description": "App that allows you to control music on your PC or TV from any device connected to the internet",
   "main": "server.js",
   "dependencies": {
-    "request": "^2.88.0",
-    "socket.io": "^2.3.0"
+    "axios": "^0.21.1",
+    "node-html-parser": "^3.3.0",
+    "socket.io": "^4.1.2"
   },
   "devDependencies": {},
   "scripts": {
