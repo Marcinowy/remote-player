@@ -52,5 +52,5 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script type="text/javascript" src="js/cookies.polyfill.js"></script>
-    <script type="text/javascript" src="js/app.js?v=dfdasf"></script>
+    <script type="text/javascript" src="js/app.js"></script>
 </body></html>
